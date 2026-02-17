@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingreso Dashboard Realtex</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding-top: 80px;
+    }
+    .box {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: inline-block;
+    }
+    input {
+      padding: 10px;
+      width: 250px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      display: block;
+    }
+    button {
+      padding: 10px 20px;
+      background: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background: #3367D6; }
+    .error { color: red; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Ingreso Dashboard Realtex</h2>
+    <input id="usuario" type="text" placeholder="Usuario">
+    <input id="password" type="password" placeholder="Contraseña">
+    <button onclick="login()">Ingresar</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script>
+    var API_URL = "https://script.google.com/macros/s/AKfycbwjh4Gvo3UHwUs2bOOk3gsc_e-9qyLu8rVichc-DqG0df8y7WhHZRzgmtEFHiOvels/exec";
+
+    function login() {
+      var usuario = document.getElementById("usuario").value;
+      var password = document.getElementById("password").value;
+
+      document.getElementById("error").innerHTML = "Verificando...";
+
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ usuario: usuario, password: password })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          sessionStorage.setItem("autenticado", "true");
+          window.location.href = "index.html";
+        } else {
+          document.getElementById("error").innerHTML = "Usuario o contraseña incorrectos";
+        }
+      })
+      .catch(function() {
+        document.getElementById("error").innerHTML = "Error de conexión";
+      });
+    }
+  </script>
+</body>
+</html>
