@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            width: 100%;
+        }
+        
+        .news-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        
+        .card-date { font-size: 11px; color: #666; margin-bottom: 6px; font-weight: 500; }
+        
+        .card-category {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .category-logistica { background: #E3F2FD; color: #1976D2; }
+        .category-ecommerce { background: #F3E5F5; color: #7B1FA2; }
+        .category-supply { background: #E8F5E9; color: #388E3C; }
+        .category-default { background: #F5F5F5; color: #666; }
+        
+        .card-content { font-size: 12px; line-height: 1.4; color: #444; margin-bottom: 10px; flex-grow: 1; }
+        
+        .card-link {
+            display: inline-block;
+            color: #7B2CBF;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 11px;
+            margin-top: auto;
+        }
+        
+        .card-link:hover { color: #5a1f8f; text-decoration: underline; }
+        .loading { text-align: center; padding: 40px; color: #666; font-size: 16px; }
+        .error { text-align: center; padding: 40px; color: #d32f2f; font-size: 14px; }
+        .no-data { text-align: center; padding: 40px; color: #666; font-size: 14px; }
+
+        @media (max-width: 768px) {
+            .cards-container { grid-template-columns: 1fr; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .cards-container { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 1025px) {
+            .cards-container { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="content" class="loading">Cargando novedades...</div>
+    </div>
+
+    <script>
+        var API_URL = "https://script.google.com/macros/s/AKfycbwoTVBE98UYLi9-vmd911pBdDQcp39euXVjgEi9UR_LCJfnsfCTslXT-8IY6jv091g/exec?page=novedades-api";
+
+        function getCategoryClass(categoria) {
+            if (!categoria) return 'category-default';
+            var cat = categoria.toLowerCase();
+            if (cat.includes('e-commerce') || cat.includes('ecommerce') || cat.includes('digitaliza')) return 'category-ecommerce';
+            if (cat.includes('logística') || cat.includes('logistica') || cat.includes('última milla') || cat.includes('sostenibilidad')) return 'category-logistica';
+            if (cat.includes('cadena') || cat.includes('suministro') || cat.includes('supply')) return 'category-supply';
+            return 'category-default';
+        }
+
+        function renderNovedades(novedades) {
+            var contentDiv = document.getElementById('content');
+            
+            if (!novedades || novedades.length === 0) {
+                contentDiv.className = 'no-data';
+                contentDiv.innerHTML = 'No hay novedades disponibles';
+                return;
+            }
+            
+            var html = '<div class="cards-container">';
+            novedades.forEach(function(item) {
+                var categoryClass = getCategoryClass(item.categoria);
+                html += '<div class="news-card">';
+                html += '<div class="card-date">' + item.fecha + '</div>';
+                html += '<span class="card-category ' + categoryClass + '">' + item.categoria + '</span>';
+                html += '<div class="card-content">' + item.novedad + '</div>';
+                html += '<a href="' + item.link + '" class="card-link" target="_blank">Ir a noticia →</a>';
+                html += '</div>';
+            });
+            html += '</div>';
+            
+            contentDiv.className = '';
+            contentDiv.innerHTML = html;
+        }
+
+        fetch(API_URL)
+            .then(function(res) { return res.json(); })
+            .then(renderNovedades)
+            .catch(function(err) {
+                document.getElementById('content').className = 'error';
+                document.getElementById('content').innerHTML = 'Error al cargar las novedades: ' + err;
+            });
+    </script>
+</body>
+</html>
