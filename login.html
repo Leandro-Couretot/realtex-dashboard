@@ -49,31 +49,42 @@
   </div>
 
   <script>
-    var API_URL = "https://script.google.com/macros/s/AKfycbwjh4Gvo3UHwUs2bOOk3gsc_e-9qyLu8rVichc-DqG0df8y7WhHZRzgmtEFHiOvels/exec";
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    }
 
-    function login() {
-      var usuario = document.getElementById("usuario").value;
+    async function login() {
+      var usuario = document.getElementById("usuario").value.trim();
       var password = document.getElementById("password").value;
 
       document.getElementById("error").innerHTML = "Verificando...";
 
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ usuario: usuario, password: password })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (data.success) {
+      try {
+        const res = await fetch("credenciales.json");
+        const credenciales = await res.json();
+        const hash = await hashPassword(password);
+        const match = credenciales.find(function(c) {
+          return c.usuario === usuario && c.hash === hash;
+        });
+
+        if (match) {
           sessionStorage.setItem("autenticado", "true");
           window.location.href = "index.html";
         } else {
           document.getElementById("error").innerHTML = "Usuario o contraseña incorrectos";
         }
-      })
-      .catch(function() {
-        document.getElementById("error").innerHTML = "Error de conexión";
-      });
+      } catch (e) {
+        document.getElementById("error").innerHTML = "Error al verificar credenciales";
+      }
     }
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") login();
+    });
   </script>
 </body>
 </html>
